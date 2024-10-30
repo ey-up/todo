@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  todo-service:
+    build:
+      context: ./backend/todo
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "9092:9092"
+    container_name: todo-service
+    environment:
+      - SPRING_PROFILES_ACTIVE =docker
+    networks:
+      - app-network
+
+  web-ui:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    container_name: web-todo
+    networks:
+      - app-network
+    depends_on:
+      - todo-service
+
+networks:
+  app-network:
+    driver: bridge
