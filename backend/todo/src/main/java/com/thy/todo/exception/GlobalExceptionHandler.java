@@ -94,5 +94,14 @@ public class GlobalExceptionHandler {
         errorResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
+
+    @ExceptionHandler(CustomTimeoutException.class)
+    public ResponseEntity<ErrorResponse> handleTodoDeletionException(CustomTimeoutException e) {
+        logger.warn("CustomTimeoutException:  {}", e.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setStatusCode(HttpStatus.REQUEST_TIMEOUT.value());
+        return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(errorResponse);
+    }
 }
 

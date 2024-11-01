@@ -11,5 +11,10 @@ public class TodoApplication {
 	}
 
 	// todo use http only cookie for jwt
-
+	// todo add role
+	// todo metrik için grafana
+	// todo logları elastic'e bas
+	// todo resillinj4j
+	// todo connector
+	// todo deployment
 }

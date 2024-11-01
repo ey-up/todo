@@ -1,5 +1,6 @@
 package com.thy.todo.controller;
 
+import com.thy.todo.common.TimeoutLimit;
 import com.thy.todo.dto.request.LoginUserRequest;
 import com.thy.todo.dto.request.RegisterUserRequest;
 import com.thy.todo.dto.response.LoginUserResponse;
@@ -20,8 +21,10 @@ public class AuthController {
         this.authenticationService = authenticationService;
     }
 
+
+    @TimeoutLimit(value = 1500, message = "An unexpected error occurred.")
     @PostMapping("/login")
-    public ResponseEntity<LoginUserResponse> login(@Valid @RequestBody LoginUserRequest LoginUserRequest) {
+    public ResponseEntity<LoginUserResponse> login(@Valid @RequestBody LoginUserRequest LoginUserRequest) throws InterruptedException {
         LoginUserResponse loginUserResponse = authenticationService.login(LoginUserRequest);
         return ResponseEntity.ok(loginUserResponse);
     }
@@ -32,14 +35,6 @@ public class AuthController {
         return ResponseEntity.ok(UserResponse.create(savedUser));
     }
 
-//    @PostMapping("/refresh-token")
-//    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
-//        String refreshToken = request.getRefreshToken();
-//
-//        if (isValidRefreshToken(refreshToken)) {
-//            String newAccessToken = generateNewAccessToken(refreshToken);
-//            return ResponseEntity.ok(new TokenResponse(newAccessToken));
-//        }
-//        return ResponseEntity.status(401).body("Invalid refresh token");
-//    }
+
 }
+
