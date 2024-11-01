@@ -30,16 +30,4 @@ public interface TodoRepository extends JpaRepository<Todo, Long> {
     @Query("SELECT t FROM Todo t WHERE t.user.id = :userId AND LOWER(t.task) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Todo> findByUserId(@Param("userId") Long userId, @Param("search") String search, Pageable pageable);
 
-
-//    long countByUserId(Long userId);
-//    @Query("SELECT COUNT(*) FROM Todo t WHERE t.user.id = :userId")
-//    long countByIdAndStatus(Long userId);
-
-//    @Query("SELECT t FROM Todo t WHERE t.user.id = :userId AND LOWER(t.task) LIKE LOWER(CONCAT('%', :search, '%'))")
-//    List<Todo> findByUserId(Long userId, String search);
-
-//    List<Todo> findByUserId(Long userId, Pageable pageable);
-
-//    @Query("SELECT t FROM Todo t WHERE LOWER(t.title) LIKE LOWER(CONCAT('%', :title, '%'))")
-//    List<Todo> findByTitleContaining(@Param("title") String title);
 }

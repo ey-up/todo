@@ -17,9 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
@@ -51,8 +48,7 @@ public class AuthenticationService {
         if (!user.isActive()) {
             throw new UserNotActiveException("User account is inactive for email: " + user.getEmail());
         }
-        // todo: role can be added later
-        Authentication authenticate = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginUserRequest.getEmail(), loginUserRequest.getPassword()));
 
         String jwt = jwtService.generateToken(user);

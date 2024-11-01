@@ -70,7 +70,7 @@ public class TodoController {
     }
 
     @Operation(summary = "Get All Todos by Page", security = {@SecurityRequirement(name = "bearer-key")})
-    @GetMapping("/search") // todo remove /search
+    @GetMapping("/search")
     public ResponseEntity<AllTodoResponse> getTodoByPage(@RequestParam(defaultValue = "0") int page,
                                                          @RequestParam(defaultValue = "5") int size) {
         Long userId = jwtService.getUserId();

@@ -31,15 +31,4 @@ public class AuthController {
         User savedUser = authenticationService.signup(registerUserRequest);
         return ResponseEntity.ok(UserResponse.create(savedUser));
     }
-
-//    @PostMapping("/refresh-token")
-//    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
-//        String refreshToken = request.getRefreshToken();
-//
-//        if (isValidRefreshToken(refreshToken)) {
-//            String newAccessToken = generateNewAccessToken(refreshToken);
-//            return ResponseEntity.ok(new TokenResponse(newAccessToken));
-//        }
-//        return ResponseEntity.status(401).body("Invalid refresh token");
-//    }
 }

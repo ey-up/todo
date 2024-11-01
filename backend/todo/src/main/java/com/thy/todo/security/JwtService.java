@@ -98,6 +98,7 @@ public class JwtService {
         String jwt = generateToken(user);
         return generateCookie("jwtCookie", jwt, "/api");
     }
+
     private ResponseCookie generateCookie(String name, String value, String path) {
         ResponseCookie cookie = ResponseCookie.from(name, value).path(path).maxAge(24 * 60 * 60).httpOnly(true).build();
         return cookie;

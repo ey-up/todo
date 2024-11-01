@@ -22,7 +22,7 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> (org.springframework.security.core.userdetails.UserDetails) repository.findByEmail(username)
-                .orElseThrow(() ->  new UserNotFoundException("User Not Found"));
+                .orElseThrow(() -> new UserNotFoundException("User Not Found"));
     }
 
     @Bean

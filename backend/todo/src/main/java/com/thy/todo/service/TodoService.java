@@ -74,14 +74,12 @@ public class TodoService {
         AllTodoResponse allTodoResponse = new AllTodoResponse();
         allTodoResponse.setTodos(todoResponses);
         allTodoResponse.setTotalCount(todoList.getTotalElements());
-
-        // todo add error handling
         return allTodoResponse;
     }
 
     public AllTodoResponse getTodoByPageAndSearch(Long userId, int page, int size, String searched) {
         Pageable pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        Page<Todo> todoList  = todoRepository.findByUserId(userId, searched, pageRequest);
+        Page<Todo> todoList = todoRepository.findByUserId(userId, searched, pageRequest);
 
         List<TodoResponse> todoResponses = todoList.toList().stream().map(TodoResponse::create).toList();
         AllTodoResponse allTodoResponse = new AllTodoResponse();
