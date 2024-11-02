@@ -3,6 +3,7 @@ package com.thy.todo.service;
 import com.thy.todo.dto.request.TodoRequest;
 import com.thy.todo.dto.response.AllTodoResponse;
 import com.thy.todo.dto.response.TodoResponse;
+import com.thy.todo.exception.DatabaseAccessException;
 import com.thy.todo.exception.TodoDeletionException;
 import com.thy.todo.exception.TodoNotFoundException;
 import com.thy.todo.model.Todo;
@@ -15,8 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class TodoService {
@@ -29,18 +28,20 @@ public class TodoService {
 
     public TodoResponse addTodo(TodoRequest addTodoRequest) {
         Todo todo = Todo.create(addTodoRequest);
-        if (!Objects.isNull(todo)) {
-            Todo save = todoRepository.save(todo);
-            return TodoResponse.create(save);
-        } else {
+        if (todo == null) {
             throw new TodoNotFoundException("Todo could not be added");
         }
-
+        try {
+            Todo savedTodo = todoRepository.save(todo);
+            return TodoResponse.create(savedTodo);
+        } catch (RuntimeException e) {
+            throw new DatabaseAccessException("Error saving Todo to database", e);
+        }
     }
 
     public TodoResponse getTodo(Long userId, Long todoId) {
-        Optional<Todo> todo = todoRepository.findByIdAndUserId(todoId, userId);
-        return todo.map(TodoResponse::create)
+        return todoRepository.findByIdAndUserId(todoId, userId)
+                .map(TodoResponse::create)
                 .orElseThrow(() -> new TodoNotFoundException("Todo with id " + todoId + " not found for user " + userId));
     }
 
@@ -68,24 +69,22 @@ public class TodoService {
 
     public AllTodoResponse getTodoByPage(Long userId, int page, int size) {
         Pageable pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        Page<Todo> todoList = todoRepository.findByUserId(userId, pageRequest);
-
-        List<TodoResponse> todoResponses = todoList.toList().parallelStream().map(TodoResponse::create).toList();
-        AllTodoResponse allTodoResponse = new AllTodoResponse();
-        allTodoResponse.setTodos(todoResponses);
-        allTodoResponse.setTotalCount(todoList.getTotalElements());
-        return allTodoResponse;
+        try {
+            Page<Todo> todoPage = todoRepository.findByUserId(userId, pageRequest);
+            return AllTodoResponse.fromPage(todoPage);
+        } catch (RuntimeException e) {
+            throw new DatabaseAccessException("Error fetching Todos from database", e);
+        }
     }
 
     public AllTodoResponse getTodoByPageAndSearch(Long userId, int page, int size, String searched) {
         Pageable pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-        Page<Todo> todoList = todoRepository.findByUserId(userId, searched, pageRequest);
-
-        List<TodoResponse> todoResponses = todoList.toList().stream().map(TodoResponse::create).toList();
-        AllTodoResponse allTodoResponse = new AllTodoResponse();
-        allTodoResponse.setTodos(todoResponses);
-        allTodoResponse.setTotalCount(todoList.getTotalElements());
-
-        return allTodoResponse;
+        try {
+            Page<Todo> todoPage = todoRepository.findByUserId(userId, searched, pageRequest);
+            return AllTodoResponse.fromPage(todoPage);
+        } catch (RuntimeException e) {
+            throw new DatabaseAccessException("Error fetching Todos from database", e);
+        }
     }
+
 }

@@ -1,24 +1,27 @@
 package com.thy.todo.service;
 
 import com.thy.todo.dto.request.TodoRequest;
+import com.thy.todo.dto.response.AllTodoResponse;
 import com.thy.todo.dto.response.TodoResponse;
+import com.thy.todo.exception.DatabaseAccessException;
 import com.thy.todo.exception.TodoDeletionException;
 import com.thy.todo.exception.TodoNotFoundException;
+import com.thy.todo.factory.TestTodoFactory;
 import com.thy.todo.model.Todo;
-import com.thy.todo.model.User;
 import com.thy.todo.repository.TodoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TodoServiceTest {
@@ -36,12 +39,7 @@ class TodoServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         todoRequest = new TodoRequest();
-        todo = new Todo();
-        todo.setId(1L);
-        User user = new User();
-        user.setId(1L);
-        todo.setUser(user);
-        todo.setTask("Sample Todo");
+        todo = TestTodoFactory.createSampleTodo();
     }
 
     @Test
@@ -56,6 +54,20 @@ class TodoServiceTest {
         // Then
         assertEquals(todo.getId(), response.getId());
         verify(todoRepository, times(1)).save(any(Todo.class));
+    }
+
+
+    @Test
+    void addTodo_ShouldThrowDatabaseAccessException() {
+        // Given
+        todoRequest.setUserId(1L);
+        when(todoRepository.save(any(Todo.class))).thenThrow(new DataAccessException("Database error") {});
+
+        // When&Then
+        DatabaseAccessException exception = assertThrows(DatabaseAccessException.class, () -> {
+            todoService.addTodo(todoRequest);
+        });
+        assertEquals("Error saving Todo to database", exception.getMessage());
     }
 
     @Test
@@ -165,5 +177,77 @@ class TodoServiceTest {
         assertEquals(todoId + " Not found", exception.getMessage());
         verify(todoRepository, times(1)).findByIdAndUserId(todoId, todoRequest.getUserId());
         verify(todoRepository, never()).save(any());
+    }
+
+    @Test
+    void testGetTodoByPage_Success() {
+        // Given
+        Long userId = 1L;
+        int page = 0;
+        int size = 5;
+        Page<Todo> todoPage = new PageImpl<>(List.of(todo));
+
+        when(todoRepository.findByUserId(userId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"))))
+                .thenReturn(todoPage);
+
+        // When
+        AllTodoResponse response = todoService.getTodoByPage(userId, page, size);
+
+        // Then
+        assertNotNull(response);
+        assertEquals(1, response.getTodos().size());
+    }
+
+    @Test
+    void testGetTodoByPage_DatabaseAccessException() {
+        // Given
+        Long userId = 1L;
+        int page = 0;
+        int size = 5;
+
+        when(todoRepository.findByUserId(any(Long.class), any(Pageable.class)))
+                .thenThrow(new DataAccessException("Database error") {});
+
+        // When
+        DatabaseAccessException exception = assertThrows(DatabaseAccessException.class, () -> {
+            todoService.getTodoByPage(userId, page, size);
+        });
+
+        // Then
+        assertEquals("Error fetching Todos from database", exception.getMessage());
+    }
+
+    @Test
+    void testGetTodoByPageAndSearch_Success() {
+        // Given
+        Long userId = 1L;
+        String searched = "example search";
+        int page = 0;
+        int size = 5;
+        Pageable pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Todo> todoPage = new PageImpl<>(List.of(todo));
+
+        when(todoRepository.findByUserId(userId, searched, pageRequest)).thenReturn(todoPage);
+
+        // When&Then
+        AllTodoResponse response = todoService.getTodoByPageAndSearch(userId, page, size, searched);
+        assertEquals(1, response.getTodos().size());
+        verify(todoRepository, times(1)).findByUserId(userId, searched, pageRequest);
+    }
+
+    @Test
+    void testGetTodoByPageAndSearch_DatabaseAccessException() {
+        // Given
+        Long userId = 1L;
+        String searched = "example search";
+        int page = 0;
+        int size = 5;
+        Pageable pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+
+        when(todoRepository.findByUserId(userId, searched, pageRequest)).thenThrow(new RuntimeException("Database error"));
+
+        // When&Then
+        assertThrows(DatabaseAccessException.class, () -> todoService.getTodoByPageAndSearch(userId, page, size, searched));
+        verify(todoRepository, times(1)).findByUserId(userId, searched, pageRequest);
     }
 }

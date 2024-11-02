@@ -1,6 +1,5 @@
 package com.thy.todo.exception;
 
-import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -90,7 +89,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleTodoDeletionException(TodoDeletionException e) {
         logger.warn("Todo could not be deleted: {}", e.getMessage());
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setMessage(e.getMessage());
+        errorResponse.setMessage("An unexpected error occurred.");
+        errorResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(DatabaseAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDatabaseAccessException(DatabaseAccessException e) {
+        logger.warn("DatabaseAccessException: {}", e.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage("An unexpected error occurred.");
         errorResponse.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
