@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import AddTodoInput from "../components/AddTodoInput";
 import ListTodo from "../components/ListTodo";
-import { useNavigate } from "react-router-dom";
 import {
   addTodo,
   getByPage,
@@ -20,16 +19,12 @@ export default function Main() {
   const [todoText, setTodoText] = useState("");
   const [todos, setTodos] = useState([]);
   const [showAddTodoFailedSnack, setShowAddTodoFailedSnack] = useState(false);
-  // const [showAddTodoSuccessSnack, setShowAddTodoSuccessSnack] = useState(false);
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(0);
   const [searchText, setSearchText] = useState("");
   const [inputTimer, setInputTimer] = useState(null);
-  const navigate = useNavigate();
   const [showFetchdTodosFailedSnack, setShowFetchTodosFailedSnack] =
     useState(false);
-  // const [showFetchTodosSuccessSnack, setShowFetchTodosSuccessSnack] =
-  //   useState(false);
 
   const handleAddTodo = async () => {
     if (todoText.length === 0) {
@@ -45,7 +40,6 @@ export default function Main() {
     const response = await addTodo(todo);
 
     if (response.success) {
-      // setShowAddTodoSuccessSnack(true);
       fetchTodos();
     } else {
       setShowAddTodoFailedSnack(true);
@@ -66,7 +60,6 @@ export default function Main() {
     if (response.success) {
       setTodos(response.todos);
       setPageCount(Math.ceil(response.totalCount / 5));
-      // setShowFetchTodosSuccessSnack(true);
     } else {
       setShowFetchTodosFailedSnack(true);
     }
@@ -115,23 +108,28 @@ export default function Main() {
             marginBottom: "20px",
           }}
         >
-          {todos.length > 0 && (
-            <TextField
-              size="small"
-              label="Search"
-              variant="standard"
-              value={searchText}
-              onChange={handleSearchInput}
-            />
-          )}
+          <TextField
+            size="small"
+            label="Search"
+            variant="standard"
+            value={searchText}
+            onChange={handleSearchInput}
+          />
         </div>
-        <ListTodo
-          fetchTodos={fetchTodos}
-          todos={todos}
-          setTodos={setTodos}
-          setTodoText={setTodoText}
-          todoText={todoText}
-        />
+        {todos.length > 0 ? (
+          <ListTodo
+            fetchTodos={fetchTodos}
+            todos={todos}
+            setTodos={setTodos}
+            setTodoText={setTodoText}
+            todoText={todoText}
+          />
+        ) : (
+          <div>
+            {" "}
+            <p> no data found </p>
+          </div>
+        )}
 
         <Snackbar
           anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -142,17 +140,6 @@ export default function Main() {
           }}
           message="Failed to add new todo"
         />
-
-        {/* <Snackbar
-          anchorOrigin={{ vertical: "top", horizontal: "right" }}
-          open={showAddTodoSuccessSnack}
-          autoHideDuration={2000}
-          onClose={() => {
-            setShowAddTodoSuccessSnack(false);
-          }}
-          message="Added new todo successfully"
-        /> */}
-
         <Snackbar
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           open={showFetchdTodosFailedSnack}
@@ -162,16 +149,6 @@ export default function Main() {
           }}
           message="Failed to fetch todos"
         />
-
-        {/* <Snackbar
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          open={showFetchTodosSuccessSnack}
-          autoHideDuration={2000}
-          onClose={() => {
-            setShowFetchTodosSuccessSnack(false);
-          }}
-          message="Fetched todos successfully"
-        /> */}
       </Container>
       <div
         style={{

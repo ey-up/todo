@@ -11,8 +11,6 @@ import {
   Outlet,
 } from "react-router-dom";
 
-
-
 const isUserLoggedIn = () => !isTokenExpired();
 
 const PrivateRoute = () => {
@@ -39,8 +37,8 @@ const router = createBrowserRouter([
     children: [{ path: "/signup", element: <Signup /> }],
   },
   {
-    path: "*", // Belirtilmeyen tüm yollar için joker karakter
-    element: <NoPage />, // NoPage bileşenini burada kullanıyoruz
+    path: "*", 
+    element: <NoPage />, 
   },
 ]);
 
